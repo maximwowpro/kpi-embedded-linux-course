@@ -10,7 +10,7 @@ KBUILDDIR := /lib/modules/$(shell uname -r)/build/
 .PHONY: modules clean tidy
 
 # recur to the original kernel Makefile with some additions
-modules:
+modules:clean
 	$(MAKE) -C "$(KBUILDDIR)" M="$(PWD)" modules
 
 tidy:
