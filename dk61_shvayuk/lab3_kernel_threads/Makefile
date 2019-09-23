@@ -3,6 +3,9 @@
 
 # this is what is used by Kbuild
 obj-m += lab3_module.o
+ccflags-m += -std=gnu11
+
+ccflags-y += ${ccflags-m}
 
 # directory containing Makefile for kernel build
 KBUILDDIR := /lib/modules/$(shell uname -r)/build/
