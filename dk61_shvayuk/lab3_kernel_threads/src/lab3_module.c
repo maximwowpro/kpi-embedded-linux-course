@@ -7,10 +7,15 @@
 #include <linux/timer.h>
 #include <linux/slab.h>		// for kmalloc()
 #include <linux/list.h>		// for linked list
+#include <asm/atomic.h>		// for atomic "compare-exchange" operation
+#include <linux/types.h>	// for atomic_t type declaration
 
 #define THREADS_RETVAL		(0)
+#define SPINLOCK_IS_LOCKED	(1)
+#define SPINLOCK_IS_UNLOCKED	(0)
 
-MODULE_DESCRIPTION("Module works with Linux kernel threads, linked list, ");
+MODULE_DESCRIPTION("Module works with Linux kernel threads, linked list, "
+		    "and atomic operations");
 MODULE_AUTHOR("max_shvayuk");
 MODULE_VERSION("0.228");
 MODULE_LICENSE("Dual MIT/GPL");		// this affects the kernel behavior
@@ -26,7 +31,41 @@ MODULE_PARM_DESC(thread_inc_iterations, "The number of a global variable "
 
 struct task_struct **threads;
 LIST_HEAD(list_for_variables);
+atomic_t *spinlock_var_handler;
+atomic_t *spinlock_list_handler;
 int global_var = 0;
+
+void spinlock_lock(atomic_t *ptr);
+void spinlock_unlock(atomic_t *ptr);
+int spinlock_init(atomic_t **ptr);
+int thread_handler (void *data);
+
+int spinlock_init(atomic_t **ptr)
+{
+	*ptr = kmalloc(sizeof(*(*ptr)), GFP_ATOMIC);
+	if (NULL == *ptr) {
+		printk(KERN_ERR "Can't allocate memory for spinlock"
+					", aborting\n");
+		return -1;
+	}
+	spinlock_unlock(*ptr);
+	
+	return 0;
+}
+
+void spinlock_lock(atomic_t *ptr)
+{
+	unsigned long retval = 0;
+	do
+		retval = atomic_cmpxchg(ptr, SPINLOCK_IS_UNLOCKED, 
+					SPINLOCK_IS_LOCKED);
+	while (SPINLOCK_IS_LOCKED == retval);
+}
+
+void spinlock_unlock(atomic_t *ptr)
+{
+	atomic_set(ptr, SPINLOCK_IS_UNLOCKED);
+}
 
 struct list_node
 {
@@ -37,16 +76,23 @@ struct list_node
 int thread_handler (void *data)
 {
 	printk(KERN_INFO "Hello from thread\n");
+	struct list_node *node_ptr = kmalloc(sizeof(*node_ptr), GFP_KERNEL);
+	if (NULL == node_ptr) {
+		printk(KERN_ERR "Can't allocate memory for list node\n");
+		goto THREAD_END_LABEL;
+	}
 	
+	spinlock_lock(spinlock_var_handler);
 	for (int i = 0; i < thread_inc_iterations; i++)
 		(*((int *)data))++;
-	
-	struct list_node *node_ptr = kmalloc(sizeof(*node_ptr), GFP_KERNEL);
-	if (NULL == node_ptr)
-		printk(KERN_ERR "Can't allocate memory for list node\n");
-	node_ptr->data = global_var;
+	node_ptr->data = *((int*)data);
+	spinlock_unlock(spinlock_var_handler);
+
+	spinlock_lock(spinlock_list_handler);
 	list_add(&(node_ptr->next), &list_for_variables);
+	spinlock_unlock(spinlock_list_handler);
 	
+	THREAD_END_LABEL:
 	while (1) {
 		if (kthread_should_stop())
 			do_exit(THREADS_RETVAL);
@@ -58,7 +104,13 @@ static int __init firstmod_init(void)
 {
 	printk(KERN_INFO "Hello from module");
 	
-	/* Allocate memory for threads handlsers */
+	/* Create spinlocks */
+	if (0 != spinlock_init(&spinlock_var_handler))
+		return -2;
+	if (0 != spinlock_init(&spinlock_list_handler))
+		return -3;
+
+	/* Allocate memory for threads handlers */
 	threads = kmalloc (num_threads * sizeof(*threads), GFP_KERNEL);
 	if (NULL == threads) {
 		printk(KERN_ERR "Can't allocate memory for thread's handlers"
@@ -75,7 +127,7 @@ static int __init firstmod_init(void)
 			       i);
 			for (i=i; i != 0; i--)
 				kfree(threads[i]);
-			return -2;
+			return -4;
 		}
 	}
 	
@@ -110,6 +162,10 @@ static void __exit firstmod_exit(void)
 	list_for_each_safe(it, tmp, &list_for_variables) {
 		list_del(it);
 	}
+	
+	/* Free the spinlocks's memory */
+	kfree(spinlock_var_handler);
+	kfree(spinlock_list_handler);
 	
 	printk(KERN_INFO "Final val is %i\n", global_var);
 	
