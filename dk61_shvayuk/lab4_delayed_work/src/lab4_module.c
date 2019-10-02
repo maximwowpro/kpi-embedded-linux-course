@@ -49,7 +49,11 @@ int thread_timer_handler(void *unused);
 void timer_callback (struct timer_list *data);
 int thread_workqueue_handler (void *unused);
 int thread_timer_handler (void *unused);
+<<<<<<< HEAD
 >>>>>>> 9079d27... Added lab 4.
+=======
+>>>>>>> 9079d2771f1635252035c9b40b643614bd3a1100
+>>>>>>> 8e560068cdc31aaab291f39f5ea5a2afa1ce1cb6
 
 struct task_struct *thread_timer;
 struct task_struct *thread_workqueue;
@@ -73,7 +77,11 @@ struct list_node
 int thread_timer_handler(void *data)
 =======
 int thread_timer_handler (void *data)
+<<<<<<< HEAD
 >>>>>>> 9079d27... Added lab 4.
+=======
+>>>>>>> 9079d2771f1635252035c9b40b643614bd3a1100
+>>>>>>> 8e560068cdc31aaab291f39f5ea5a2afa1ce1cb6
 {
         DEBUG_LOG("Hello from timer thread\n");
         
@@ -103,7 +111,11 @@ int thread_timer_handler (void *data)
 void timer_callback(struct timer_list *data)
 =======
 void timer_callback (struct timer_list *data)
+<<<<<<< HEAD
 >>>>>>> 9079d27... Added lab 4.
+=======
+>>>>>>> 9079d2771f1635252035c9b40b643614bd3a1100
+>>>>>>> 8e560068cdc31aaab291f39f5ea5a2afa1ce1cb6
 {
        if (0 == (jiffies % COMPARE_DIVIDER_VAL)) {
                /* Timer send the completion "notification" to the timer's thread */
@@ -129,7 +141,11 @@ void timer_callback (struct timer_list *data)
 int thread_workqueue_handler(void *data)
 =======
 int thread_workqueue_handler (void *data)
+<<<<<<< HEAD
 >>>>>>> 9079d27... Added lab 4.
+=======
+>>>>>>> 9079d2771f1635252035c9b40b643614bd3a1100
+>>>>>>> 8e560068cdc31aaab291f39f5ea5a2afa1ce1cb6
 {
 	DEBUG_LOG("Hello from wq thread\n");
 
