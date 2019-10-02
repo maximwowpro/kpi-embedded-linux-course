@@ -41,9 +41,15 @@ MODULE_VERSION("0.228");
 MODULE_LICENSE("Dual MIT/GPL");
 
 void wq_callback(struct work_struct *work);
+<<<<<<< HEAD
 void timer_callback(struct timer_list *data);
 int thread_workqueue_handler(void *unused);
 int thread_timer_handler(void *unused);
+=======
+void timer_callback (struct timer_list *data);
+int thread_workqueue_handler (void *unused);
+int thread_timer_handler (void *unused);
+>>>>>>> 9079d2771f1635252035c9b40b643614bd3a1100
 
 struct task_struct *thread_timer;
 struct task_struct *thread_workqueue;
@@ -63,7 +69,11 @@ struct list_node
 	unsigned long data;
 };
 
+<<<<<<< HEAD
 int thread_timer_handler(void *data)
+=======
+int thread_timer_handler (void *data)
+>>>>>>> 9079d2771f1635252035c9b40b643614bd3a1100
 {
         DEBUG_LOG("Hello from timer thread\n");
         
@@ -89,7 +99,11 @@ int thread_timer_handler(void *data)
         do_exit(THREADS_RETVAL);
 }
 
+<<<<<<< HEAD
 void timer_callback(struct timer_list *data)
+=======
+void timer_callback (struct timer_list *data)
+>>>>>>> 9079d2771f1635252035c9b40b643614bd3a1100
 {
        if (0 == (jiffies % COMPARE_DIVIDER_VAL)) {
                /* Timer send the completion "notification" to the timer's thread */
@@ -111,7 +125,11 @@ void timer_callback(struct timer_list *data)
        }
 }
 
+<<<<<<< HEAD
 int thread_workqueue_handler(void *data)
+=======
+int thread_workqueue_handler (void *data)
+>>>>>>> 9079d2771f1635252035c9b40b643614bd3a1100
 {
 	DEBUG_LOG("Hello from wq thread\n");
 
